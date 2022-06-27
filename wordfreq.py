@@ -13,16 +13,17 @@ Run through command prompt/terminal
 
 Input:
 Windows
-py -3 wordfreq.py (Input txt file) (Generated File Name) --savepath (Generated Folder Name)
+py -3 wordfreq.py (Input txt file) (Generated File Name) (Generated Folder Name) --savepath (Save Path) 
 
 Mac
-py -3 wordfreq.py (Input txt file) (Generated File Name) --savepath (Generated Folder Name)
+python3 wordfreq.py (Input txt file) (Generated File Name) (Generated Folder Name) --savepath (Save Path) 
 """
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("input_folder")
     parser.add_argument("word_freq_file_name")
+    parser.add_argument("output_folder")
     parser.add_argument(
         "--savepath",
         dest="output_path",
@@ -34,10 +35,11 @@ def main():
     run(
         parsed_args.input_folder,
         parsed_args.word_freq_file_name,
+        parsed_args.output_folder,
         parsed_args.output_path
     )
 
-def run(input_folder_path, word_list_file, output):
+def run(input_folder_path, word_list_file, output_folder, output_path):
 
     filepath = input_folder_path
 
@@ -84,29 +86,23 @@ def run(input_folder_path, word_list_file, output):
             # Sort Word List
             word_list.sort()
 
-        # Sample of 10 words
-        print("Word Freq Sample of top 10 words...")
-        ten_word_sample = list(word_freq.keys())[:10]
-        # for word in ten_word_sample:
-            # Word must take up a min of 15 spaces; freq can take min of 8 spaces
-            # print("{0:15}{1:8d}".format(word, word_freq[word]))
-
-        # print(f"...")
-
         sorted_word_freq = order_dict_by_freq(word_freq)
         print(type(sorted_word_freq))
         print(sorted_word_freq)
-        # for tuple_freq in sorted_word_freq:
-            # count, word = tuple_freq
-            # print("{0:15}{1:8d}".format(word, count))
 
-        output = str(output)
-        output = output.strip()
-        output = os.path.join(r"C:\Users\Austin\PycharmProjects\dictionary", output)
-        print(output)
-        os.makedirs(output, exist_ok=True)
-        print(f"Created directory {output}...")
-        with open(os.path.join(output, word_list_file), 'w', encoding='utf-8') as output_file:
+        # Reverse dict keys w/ values
+        sorted_word_freq_proper = {}
+        for key, value in sorted_word_freq.items():
+            sorted_word_freq_proper[value] = key
+
+        output_path = str(output_path)
+        # output = output.strip()
+        # output = os.path.join(r"C:\Users\Austin\PycharmProjects\dictionary", output)
+        # print(output)
+        file_output_path = os.path.join(output_path, output_folder)
+        os.makedirs(file_output_path, exist_ok=True)
+        print(f"Created directory {file_output_path}...")
+        with open(os.path.join(file_output_path, word_list_file), 'w', encoding='utf-8') as output_file:
             # Generate Word List
             for word in word_list:
                 output_file.write(word)
@@ -115,12 +111,9 @@ def run(input_folder_path, word_list_file, output):
 
         # Generate JSON Word Frequency List
         json_word_freq_file = json_word_freq_list_file + ".json"
-        with open(os.path.join(output, json_word_freq_file), 'w', encoding='utf-8') as json_output_file:
-            json.dump(sorted_word_freq, json_output_file, ensure_ascii=False, indent=2)
+        with open(os.path.join(file_output_path, json_word_freq_file), 'w', encoding='utf-8') as json_output_file:
+            json.dump(sorted_word_freq_proper, json_output_file, ensure_ascii=False, indent=2)
 
-
-
-# Convert dict to tuple
 # Values of Key, then Count
 def order_dict_by_freq(dict):
     sorted_val = []
