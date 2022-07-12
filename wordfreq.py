@@ -6,6 +6,7 @@ import json
 
 """
 Word Freq
+Last Updated: July 12, 2022
 
 This script generates a new file containing a list of words 
 
@@ -48,57 +49,48 @@ def run(input_folder_path, word_list_file, output_folder, output_path):
     json_word_freq_list_file = word_list_file
     word_list_file = f"{word_list_file}.txt"
 
+
     with open(filepath, 'r', encoding='UTF-8') as file:
         # For each line in the file
         for line in file:
-            # Remove the punctuation
+            # Remove the punctuation and lowercase text
             line = strip_punct(line)
             line = line.lower()
 
             # Separate words by spaces into list
             text = line.split()
-            print(type(text))
 
             # Create word list and word freq dict
-            print("First Run Initiated...")
             for word in text:
-                # word = word.lower()
+
                 if word not in word_freq:
                     word_freq[word] = 0
                     word_list.append(str(word))
                 word_freq[word] += 1
-            print("First Run Complete...")
+            print(f"Adding word to list and frequency list...")
 
             # Delete digits from word list
             for word in word_list:
                 if re.search(r"(\d)+", word):
-                    print(word)
+                    print(f"Removed from TXT: {word}")
                     word_list.remove(word)
+            print("First Digit Removal Run Complete...")
 
             # Delete digits again because 1st run did not catch all
-            print("Second Run Initiated...")
             for word in word_list:
                 if re.search(r"(\d)+", word):
-                    print(word)
+                    print(f"Removed from TXT: {word}")
                     word_list.remove(word)
-            print("Second Run Complete...")
+            print("Second Digit Removal Run Complete...")
 
             # Sort Word List
             word_list.sort()
 
-        sorted_word_freq = order_dict_by_freq(word_freq)
-        print(type(sorted_word_freq))
-        print(sorted_word_freq)
-
-        # Reverse dict keys w/ values
-        sorted_word_freq_proper = {}
-        for key, value in sorted_word_freq.items():
-            sorted_word_freq_proper[value] = key
+        # Sort dict by Value (High freq to Low freq)
+        sorted_word_freq_proper = {key: val for key, val in sorted(word_freq.items(), key=lambda element: element[1], reverse=True)}
+        print(sorted_word_freq_proper)
 
         output_path = str(output_path)
-        # output = output.strip()
-        # output = os.path.join(r"C:\Users\Austin\PycharmProjects\dictionary", output)
-        # print(output)
         file_output_path = os.path.join(output_path, output_folder)
         os.makedirs(file_output_path, exist_ok=True)
         print(f"Created directory {file_output_path}...")
@@ -107,24 +99,12 @@ def run(input_folder_path, word_list_file, output_folder, output_path):
             for word in word_list:
                 output_file.write(word)
                 output_file.write('\n')
-            print(f"Created Word Frequency List {word_list_file}...")
+            print(f"Created Word List {word_list_file}...")
 
         # Generate JSON Word Frequency List
         json_word_freq_file = json_word_freq_list_file + ".json"
         with open(os.path.join(file_output_path, json_word_freq_file), 'w', encoding='utf-8') as json_output_file:
             json.dump(sorted_word_freq_proper, json_output_file, ensure_ascii=False, indent=2)
-
-# Values of Key, then Count
-def order_dict_by_freq(dict):
-    sorted_val = []
-    for key in dict:
-        # (dict[key], key) == make a tuple with count, then key
-        sorted_val.append((dict[key], key))
-    # Since the first val in the tuples are numbers, sorted() will sort based off of that val
-    sorted_val = sorted(sorted_val)
-    # Sort by largest word freq first
-    sorted_val = sorted_val[::-1]
-    return sorted_val
 
 def strip_punct(line):
     for char in string.punctuation:
